@@ -26,9 +26,9 @@ def get_location():
 lat, lng = get_location()
 
 # lat, lng = 52.3702, 4.8952  # Example: Amsterdam
-zoom = 5
+zoom = 15
 size = "600x400"
-maptype = "satellite"
+maptype = "terrain"
 
 url = (
     "https://maps.googleapis.com/maps/api/staticmap"
