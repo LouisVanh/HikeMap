@@ -1,9 +1,42 @@
+:root {
+  --font-size-h1: 2.5rem;
+  --font-size-button: 1rem;
+  --button-padding: 12px 24px;
+  --button-radius: 8px;
+  --button-color: #ffffff;
+  --color-h1: rgb(187, 188, 193);
+  --button-bg: #2563eb;
+  --button-bg-hover: #1d409e;
+}
+
+
 body {
   font-family: sans-serif;
   background-color: hsl(245, 100%, 22%);
   margin: 0;
 }
 
+
 h1 {
-    color: rgb(187, 188, 193);
+  color: var(--color-h1);
+  font-size: var(--font-size-h1);
+  font-weight: bold;
+  margin-bottom: 20px;
 }
+
+
+button {
+  font-size: var(--font-size-button);
+  padding: var(--button-padding);
+  background-color: var(--button-bg);
+  color: var(--button-color);
+  border: none;
+  border-radius: var(--button-radius);
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: var(--button-bg-hover);
+}
+
