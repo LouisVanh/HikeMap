@@ -40,3 +40,11 @@ button:hover {
   background-color: var(--button-bg-hover);
 }
 
+
+/* This is a class --> reference it like className="attribution-link" */
+.attribution-link {
+  color: inherit;
+  text-decoration: none;
+  font-weight: bold;
+}
+
