@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import ParticlesBackground from '../components/particles';
 // import Image from "next/image";
 
 // Home can be named anything, this just makes sense
@@ -17,6 +18,7 @@ export default function HomePage() {
         padding: '2rem'
       }}
     >
+      <ParticlesBackground />
       <h1>Welcome to HikeMap</h1>
 
       <Link href="/map">
