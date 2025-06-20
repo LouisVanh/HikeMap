@@ -3,7 +3,7 @@ import Link from 'next/link';
 // import Image from "next/image";
 
 // Home can be named anything, this just makes sense
-export default function Home() {
+export default function HomePage() {
   return (
     <main
       style={{
