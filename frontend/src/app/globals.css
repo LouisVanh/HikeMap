@@ -1,5 +1,5 @@
 :root {
-  --font-size-h1: 2.5rem;
+  --font-size-h1: 4rem;
   --font-size-button: 1rem;
   --button-padding: 12px 24px;
   --button-radius: 8px;
@@ -24,6 +24,7 @@ body {
   background-size: 800% 800%;
   animation: gradientShift 15s ease infinite;
   color: var(--foreground);
+  overflow:hidden
 }
 
 /* Optional: override link styles globally */

@@ -1,11 +1,11 @@
 'use client';
 import Link from 'next/link';
-import ParticlesBackground from '../components/particles';
-// import Image from "next/image";
+import ParticlesWrapper from '../components/particles_wrapper';
 
-// Home can be named anything, this just makes sense
 export default function HomePage() {
   return (
+    <>
+    <ParticlesWrapper />
     <main
       style={{
         height: '100vh',
@@ -15,17 +15,23 @@ export default function HomePage() {
         alignItems: 'center',
         textAlign: 'center',
         gap: '1rem',
-        padding: '2rem'
+        padding: '2rem',
+        position: 'relative', // so your button content layers above the particles
+        zIndex: 1,
       }}
     >
-      <ParticlesBackground />
       <h1>Welcome to HikeMap</h1>
-
       <Link href="/map">
         <button>
+          <img
+            src="https://cdn-icons-png.flaticon.com/128/892/892917.png"
+            alt="Leaf"
+            style={{ width: '16px', height: '16px', marginRight: '0.5rem' }}
+          />
           Go to Map
         </button>
       </Link>
     </main>
+</>
   );
 }
