@@ -1,5 +1,5 @@
 :root {
-  --font-size-h1: 4rem;
+  --font-size-h1: 6rem;
   --font-size-button: 1rem;
   --button-padding: 12px 24px;
   --button-radius: 8px;
@@ -49,6 +49,7 @@ a {
 
 h1 {
   color: var(--color-h1);
+  font-family: var(--font-dancing), cursive !important;
   font-size: var(--font-size-h1);
   font-weight: bold;
   margin-bottom: 20px;
