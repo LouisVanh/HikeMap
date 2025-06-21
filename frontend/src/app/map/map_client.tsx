@@ -2,8 +2,9 @@
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { LatLngExpression } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import {customMarkerIcon} from '@/utils/marker_icon';
 
-const position: LatLngExpression = [51.505, -0.09];
+const position: LatLngExpression = [43.7154, -79.3896];
 
 export default function MapClient() {
     return (
@@ -18,7 +19,7 @@ export default function MapClient() {
                 <TileLayer
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
-                <Marker position={position}>
+                <Marker position={position} icon={customMarkerIcon}>
                     <Popup>🌍 You are here!</Popup>
                 </Marker>
             </MapContainer>
