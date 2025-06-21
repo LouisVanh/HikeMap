@@ -1,4 +1,4 @@
-import { MarkerIconPaths } from '@/lib/markerPaths';
+import { MarkerIconPaths } from '@/utils/markerPaths';
 import L from 'leaflet';
 
 export const customRedMarkerIcon = new L.Icon({
