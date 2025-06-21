@@ -2,13 +2,15 @@
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { LatLngExpression } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import {customMarkerIcon} from '@/utils/marker_icon';
+import { customRedMarkerIcon, customBlueMarkerIcon, customGreenMarkerIcon } from '@/utils/marker_icon';
 
 const position: LatLngExpression = [43.7154, -79.3896];
+const positionTestHike: LatLngExpression = [43.7, -79.3896];
+const positionTestRestaurant: LatLngExpression = [43.7154, -80];
 
 export default function MapClient() {
     return (
-        <div style={{ height: '100vh', width: '100%', position: 'relative'  }}>
+        <div style={{ height: '100vh', width: '100%', position: 'relative' }}>
             <MapContainer
                 center={position}
                 zoom={13}
@@ -19,8 +21,14 @@ export default function MapClient() {
                 <TileLayer
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
-                <Marker position={position} icon={customMarkerIcon}>
+                <Marker position={position} icon={customBlueMarkerIcon}>
                     <Popup>🌍 You are here!</Popup>
+                </Marker>
+                <Marker position={positionTestHike} icon={customGreenMarkerIcon}>
+                    <Popup>🌍 Hike over here!</Popup>
+                </Marker>
+                <Marker position={positionTestRestaurant} icon={customRedMarkerIcon}>
+                    <Popup>🌍 Restaurant over here!</Popup>
                 </Marker>
             </MapContainer>
 
