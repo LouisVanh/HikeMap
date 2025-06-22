@@ -1,5 +1,5 @@
 :root {
-  --font-size-h1: 6rem;
+  --font-size-h1: 10rem;
   --font-size-button: 1rem;
   --button-padding: 12px 24px;
   --button-radius: 8px;
@@ -53,6 +53,7 @@ h1 {
   font-size: var(--font-size-h1);
   font-weight: bold;
   margin-bottom: 20px;
+  margin-top: 0px;
 }
 
 
