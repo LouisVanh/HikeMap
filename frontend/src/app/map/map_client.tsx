@@ -9,12 +9,33 @@ import { customRedMarkerIcon, customBlueMarkerIcon, customGreenMarkerIcon } from
 import { useUserLocation } from '@/hooks/useUserLocation';
 // For zooming
 import { useMap } from 'react-leaflet';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 
 const position: LatLngExpression = [43.7154, -79.3896];
 const positionTestHike: LatLngExpression = [43.7, -79.3896];
 const positionTestRestaurant: LatLngExpression = [43.7154, -80];
+
+function FlyToUserOnClick({
+    shouldFly,
+    position,
+    onDone,
+}: {
+    shouldFly: boolean;
+    position: LatLngExpression;
+    onDone: () => void;
+}) {
+    const map = useMap();
+
+    useEffect(() => {
+        if (shouldFly) {
+            map.flyTo(position, 15);
+            onDone(); // Reset trigger flag
+        }
+    }, [shouldFly, position, map, onDone]);
+
+    return null;
+}
 
 // Need to abstract into a method or JSX throws a fit.
 function FlyToUserWhenReady({ position }: { position: LatLngExpression }) {
@@ -31,6 +52,7 @@ function FlyToUserWhenReady({ position }: { position: LatLngExpression }) {
 
 export default function MapClient() {
     const userPosition = useUserLocation();
+    const [flyToUserRequested, setFlyToUserRequested] = useState(false);
 
     return (
         <div style={{ height: '100vh', width: '100%', position: 'relative' }}>
@@ -60,7 +82,49 @@ export default function MapClient() {
                         <FlyToUserWhenReady position={userPosition} />
                     </>
                 )}
-                
+
+                {/* If the user clicks the home button */}
+                {userPosition && (
+                    <FlyToUserOnClick
+                        shouldFly={flyToUserRequested}
+                        position={userPosition}
+                        onDone={() => setFlyToUserRequested(false)}
+                    />
+                )}
+
+                <div
+                    style={{
+                        position: 'absolute',
+                        bottom: '10px',
+                        left: '10px',
+                        zIndex: 1000, // Make sure it floats above the map
+                    }}
+                >
+                    <button
+                        style={{
+                            padding: '0.5rem 1rem',
+                            backgroundColor: '#2563eb',
+                            color: 'white',
+                            border: 'none',
+                             borderRadius: '50%', // ← makes it perfectly round
+                            fontSize: '1rem',
+                            cursor: 'pointer',
+                            boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+                        }}
+                        onClick={() => {
+                            console.log("Clicked button")
+                            {/* For some reason, this won't work - apparently JSX cant be created like this, need a normal func */ }
+                            {/*userPosition && <FlyToUserWhenReady position={userPosition} /> */ }
+                            setFlyToUserRequested(true)
+                        }}
+                    >
+                        <img
+                            src="/home.svg"  // 👈 Put your house icon in the public folder (where assets reside)
+                            alt="Home"
+                            style={{ width: '24px', height: '24px' }}
+                        />
+                    </button>
+                </div>
             </MapContainer>
 
 
