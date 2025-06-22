@@ -60,34 +60,7 @@ export default function MapClient() {
                         <FlyToUserWhenReady position={userPosition} />
                     </>
                 )}
-                                <div
-                    style={{
-                        position: 'absolute',
-                        bottom: '10px',
-                        left: '10px',
-                        zIndex: 1000, // Make sure it floats above the map
-                    }}
-                >
-                    <button
-                        style={{
-                            padding: '0.5rem 1rem',
-                            backgroundColor: '#2563eb',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '8px',
-                            fontSize: '1rem',
-                            cursor: 'pointer',
-                            boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
-                        }}
-                        onClick={() => {
-                            console.log("Clicked button")
-                            {/* For some reason, this won't work - apparently JSX cant be created like this, need a normal func */}
-                            userPosition && <FlyToUserWhenReady position={userPosition} />
-                        }}
-                    >
-                        My Button
-                    </button>
-                </div>
+                
             </MapContainer>
 
 
