@@ -102,12 +102,14 @@ export default function MapClient() {
                 >
                     <button
                         style={{
-                            padding: '0.5rem 1rem',
+                            width: '48px',
+                            height: '48px',
                             backgroundColor: '#2563eb',
-                            color: 'white',
                             border: 'none',
-                             borderRadius: '50%', // ← makes it perfectly round
-                            fontSize: '1rem',
+                            borderRadius: '50%', // ← makes it perfectly round
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
                             cursor: 'pointer',
                             boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
                         }}
