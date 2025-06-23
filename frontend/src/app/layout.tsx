@@ -30,12 +30,15 @@ const marcellus = Marcellus({
 export const metadata = {
   title: 'HikeMap',
   description: 'Find your favourite hikes and beautiful nature shots here',
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en"       
-    className={`
+    <html lang="en"
+      className={`
         ${playfair.variable}
         ${dancing.variable}
         ${cormorant.variable}
