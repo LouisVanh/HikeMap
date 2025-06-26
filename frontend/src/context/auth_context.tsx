@@ -91,10 +91,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(session?.user ?? null);
       console.log(`[AuthContext] Auth state changed: ${event}`);
       console.log('[AuthContext] New session:', session);
-
-      // if (event === 'SIGNED_IN' && session?.user) {
-      //   upsertUser(session.user); // Send to complete-profile page if needed
-      // }
     });
 
     // Cleanup subscription on unmount
