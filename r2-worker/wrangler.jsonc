@@ -12,8 +12,7 @@
 	"routes": [
 		{
 			"pattern": "cdn.hikemap.app/*",
-			"zone_name": "hikemap.app",
-			"custom_domain": true
+			"zone_name": "hikemap.app"
 		}
 	]
 }
