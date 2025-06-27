@@ -2,6 +2,7 @@ import { AuthProvider } from '@/context/auth_context';
 import './globals.css';
 import 'leaflet/dist/leaflet.css';
 import { Playfair_Display, Dancing_Script, Cormorant_Garamond, Marcellus } from 'next/font/google';
+import { Analytics } from "@vercel/analytics/next"
 
 // Import all fonts as CSS variables
 const playfair = Playfair_Display({
@@ -43,13 +44,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
     <html lang="en"
     // Fonts
-      className={`
-        ${playfair.variable}
-        ${dancing.variable}
-        ${cormorant.variable}
-        ${marcellus.variable}
+    className={`
+      ${playfair.variable}
+      ${dancing.variable}
+      ${cormorant.variable}
+      ${marcellus.variable}
       `}>
-      <body style={{ margin: 0 }}>{children}</body>
+      <body style={{ margin: 0 }}>{children}
+        
+      {/* This is for our analytics tracking*/}
+      <Analytics/> 
+      </body>
     </html>
     </AuthProvider>
   );
