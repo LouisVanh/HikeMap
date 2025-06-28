@@ -77,7 +77,7 @@ useEffect(() => {
 
   // Call this to sign out the user
   const signOut = async () => {
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({ scope: 'local' });
   };
 
   // Make the context values available to all children of this component
