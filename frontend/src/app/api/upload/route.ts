@@ -51,15 +51,11 @@ export async function POST(req: NextRequest) {
   if (!file) return NextResponse.json({ error: 'No file' }, { status: 400 });
 
   // Convert uploaded file to Buffer safely
-  // ⚠️ We cast to any to bypass TS's broken generic enforcement safely
-  const buffer = Buffer.from(new Uint8Array(await file.arrayBuffer())) as any;
+  const arrayBuffer : ArrayBuffer = await file.arrayBuffer();
+  const buffer : Buffer<ArrayBufferLike> = Buffer.from(new Uint8Array(arrayBuffer));
 
   // Don't over-declare type, this avoids conflict
   let resizedBuffer = buffer;
-
-  // REQUIRED FOR TYPESCRIPT OR IT WILL COMPLETELY BREAK.
-  //const sharp = require('sharp');
-  //const sharp = (await import('sharp')).default;
 
   let contentType = file.type;
 
@@ -71,7 +67,7 @@ export async function POST(req: NextRequest) {
         .toBuffer();
       contentType = 'image/jpeg';
     }
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: 'Resize failed' }, { status: 500 });
   }
 
@@ -95,6 +91,6 @@ export async function POST(req: NextRequest) {
     const publicUrl = `https://cdn.hikemap.app/${key}`;
     return NextResponse.json({ url: publicUrl });
   } catch (err) {
-    return NextResponse.json({ error }, { status: 500 });
+    return NextResponse.json({ err }, { status: 500 });
   }
 }
