@@ -27,29 +27,39 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null); // current session
 
   // When the component mounts: check auth state and listen for changes
-  useEffect(() => {
-    // Load session on initial render
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      console.log('[AuthContext] Loaded session:', session);
-    });
+useEffect(() => {
+  // Initial session load
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    setSession(session);
+    setUser(session?.user ?? null);
+  });
 
-    // Listen to login/logout events and update state accordingly
-    const {
-      data: { subscription }
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      console.log(`[AuthContext] Auth state changed: ${event}`);
-      console.log('[AuthContext] New session:', session);
-    });
+  // Listen for login/logout events
+  const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    setSession(session);
+    setUser(session?.user ?? null);
 
-    // Cleanup subscription on unmount
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
+    // Only run redirect check if user just signed in
+    if (event === 'SIGNED_IN' && session?.user) {
+      const { data, error } = await supabase
+        .from('Users')
+        .select('id')
+        .eq('id', session.user.id)
+        .maybeSingle();
+
+      if (error || !data) {
+        console.log('[AuthProvider] Redirecting to /complete-profile...');
+        window.location.href = '/complete-profile';
+      }
+    }
+  });
+
+  return () => {
+    subscription.unsubscribe();
+  };
+}, []);
+
+
 
   // Call this when user clicks "Sign in"
   const signInWithGoogle = async () => {

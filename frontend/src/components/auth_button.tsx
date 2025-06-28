@@ -8,7 +8,7 @@ export const AuthButton = () => {
     <div className="flex items-center gap-4">
       {user ? (
         <>
-          <span>Hi, {user.email}</span>
+          <span className="text-white">Hi, {user.email}</span>
           <button
             className="bg-red-500 text-white px-3 py-1 rounded"
             onClick={signOut}
