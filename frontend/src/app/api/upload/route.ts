@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { r2 } from '@/utils/r2Client';
 import { supabase } from '@/utils/supabaseClient';
-//import { hasCompletedProfile } from '@/utils/check_profile_completion';
-import useRequireCompleteProfile from '@/hooks/useRequireCompleteProfile';
+import { hasCompletedProfile } from '@/utils/check_profile_completion';
+import sharp from 'sharp';
+//import useRequireCompleteProfile from '@/hooks/useRequireCompleteProfile'; Will never work in server
 export const runtime = 'nodejs';
 
 const SIZE_LIMITS = {
@@ -39,9 +40,10 @@ export async function POST(req: NextRequest) {
   }
 
   // Check if the user has completed their profile
-  if(['hike-small','hike-large','restaurant-small','restaurant-large'].includes(validType)) {
-    if(!useRequireCompleteProfile){
-      console.log("Oops, you haven't set up your profile yet... sending you back.")
+  if (['hike-small', 'hike-large', 'restaurant-small', 'restaurant-large'].includes(validType)) {
+    const profileOk = await hasCompletedProfile(user.id);
+    if (!profileOk) {
+      return NextResponse.json({ error: 'Please complete your profile first' }, { status: 403 });
     }
   }
   const formData = await req.formData();
@@ -49,14 +51,16 @@ export async function POST(req: NextRequest) {
   if (!file) return NextResponse.json({ error: 'No file' }, { status: 400 });
 
   // Convert uploaded file to Buffer safely
-  const buffer = Buffer.from(new Uint8Array(await file.arrayBuffer()));
-
+  // ⚠️ We cast to any to bypass TS's broken generic enforcement safely
+  const buffer = Buffer.from(new Uint8Array(await file.arrayBuffer())) as any;
 
   // Don't over-declare type, this avoids conflict
   let resizedBuffer = buffer;
 
   // REQUIRED FOR TYPESCRIPT OR IT WILL COMPLETELY BREAK.
-  const sharp = require('sharp');
+  //const sharp = require('sharp');
+  //const sharp = (await import('sharp')).default;
+
   let contentType = file.type;
 
   try {
@@ -90,7 +94,7 @@ export async function POST(req: NextRequest) {
 
     const publicUrl = `https://cdn.hikemap.app/${key}`;
     return NextResponse.json({ url: publicUrl });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err) {
+    return NextResponse.json({ error }, { status: 500 });
   }
 }

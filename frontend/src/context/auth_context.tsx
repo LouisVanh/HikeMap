@@ -7,7 +7,6 @@ import {
   useState,
   ReactNode,
 } from 'react';
-import { DEFAULT_NAME, DEFAULT_PROFILE_PICTURE_URL } from '@/utils/constants';
 import { supabase } from '../utils/supabaseClient';
 import type { Session, User } from '@supabase/supabase-js';
 
