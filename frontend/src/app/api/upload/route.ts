@@ -1,49 +1,90 @@
-// File: src/app/api/upload/route.ts (must be this structure for app router)
-
 import { NextRequest, NextResponse } from 'next/server';
-import { r2 } from '@/utils/r2Client'; // Our R2 client from utils
-import { PutObjectCommand } from '@aws-sdk/client-s3'; // AWS SDK command to upload objects
+import { PutObjectCommand } from '@aws-sdk/client-s3';
+import sharp from 'sharp';
+import { r2 } from '@/utils/r2Client';
+import { supabase } from '@/utils/supabaseClient';
 
-// Ensure this route runs in Node.js runtime (not Edge, which lacks full Buffer support)
 export const runtime = 'nodejs';
 
+const SIZE_LIMITS = {
+  'profile': 128 * 1024,
+  'hike-small': 128 * 1024,
+  'hike-large': 4 * 1024 * 1024,
+  'restaurant-small': 128 * 1024,
+  'restaurant-large': 4 * 1024 * 1024,
+};
+
 export async function POST(req: NextRequest) {
-  // Parse incoming multipart/form-data using built-in Web API
-  const formData = await req.formData();
+  const type = req.nextUrl.searchParams.get('type');
 
-  // Get the file from the 'file' field
-  const file = formData.get('file') as File;
-
-  // Validate the file
-  if (!file) {
-    return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
+  if (!type || !(type in SIZE_LIMITS)) {
+    return NextResponse.json({ error: 'Invalid type' }, { status: 400 });
   }
 
-  // Convert file to Buffer so we can send it to R2 (Cloudflare)
-  const arrayBuffer = await file.arrayBuffer(); // Raw binary
-  const buffer = Buffer.from(arrayBuffer);      // Node.js Buffer version
+  const validType = type as keyof typeof SIZE_LIMITS;
 
-  // Set a key (path) for the file inside the bucket (e.g., uploads/photo.png)
-  const key = `uploads/${file.name}`;
+  const authHeader = req.headers.get('authorization');
+  if (!authHeader?.startsWith('Bearer ')) {
+    return NextResponse.json({ error: 'Missing or invalid auth' }, { status: 401 });
+  }
+
+  const token = authHeader.replace('Bearer ', '');
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser(token);
+
+  if (error || !user) {
+    return NextResponse.json({ error: 'Auth failed' }, { status: 401 });
+  }
+
+  const formData = await req.formData();
+  const file = formData.get('file') as File;
+  if (!file) return NextResponse.json({ error: 'No file' }, { status: 400 });
+
+  // Convert uploaded file to Buffer safely
+  const buffer = Buffer.from(new Uint8Array(await file.arrayBuffer()));
+
+
+  // Don't over-declare type, this avoids conflict
+  let resizedBuffer = buffer;
+
+  // REQUIRED FOR TYPESCRIPT OR IT WILL COMPLETELY BREAK.
+  const sharp = require('sharp');
+  let contentType = file.type;
 
   try {
-    // Upload the file to R2 using AWS SDK
+    if (['profile', 'hike-small', 'restaurant-small'].includes(validType)) {
+      resizedBuffer = await sharp(buffer)
+        .resize({ width: 512 })
+        .jpeg({ quality: 80 })
+        .toBuffer();
+      contentType = 'image/jpeg';
+    }
+  } catch (err) {
+    return NextResponse.json({ error: 'Resize failed' }, { status: 500 });
+  }
+
+  if (resizedBuffer.length > SIZE_LIMITS[validType]) {
+    return NextResponse.json({ error: 'Image too large after resizing' }, { status: 400 });
+  }
+
+  const filename = `${Date.now()}-${Math.random().toString(36).substring(2)}.jpg`;
+  const key = `uploads/${user.id}/${validType}/${filename}`;
+
+  try {
     await r2.send(
       new PutObjectCommand({
-        Bucket: process.env.R2_BUCKET_NAME!, // Bucket name from .env
-        Key: key,                            // Unique key for this file
-        Body: buffer,                        // Actual file data
-        ContentType: file.type,              // Set the correct MIME type
+        Bucket: process.env.R2_BUCKET_NAME!,
+        Key: key,
+        Body: resizedBuffer,
+        ContentType: contentType,
       })
     );
 
-    // Generate the public URL so frontend can use it
-    const publicUrl = `https://${process.env.R2_BUCKET_NAME}.auto.r2.cloudflarestorage.com/${key}`;
-
-    // Return success + URL to the frontend
+    const publicUrl = `https://${process.env.R2_PUBLIC_DOMAIN}/${key}`;
     return NextResponse.json({ url: publicUrl });
   } catch (err: any) {
-    console.error('Upload failed:', err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
