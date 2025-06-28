@@ -27,53 +27,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null); // current user
   const [session, setSession] = useState<Session | null>(null); // current session
 
-  // This function runs when a user signs in.
-  // It checks if their profile exists, inserts if needed, and redirects if name is "John Smith"
-  const upsertUser = async (user: User) => {
-    const { id, user_metadata } = user;
-
-    const name = user_metadata.full_name ?? DEFAULT_NAME;
-    const profilePic = user_metadata.avatar_url ?? DEFAULT_PROFILE_PICTURE_URL;
-
-    console.log('[AuthContext] Trying to upsert user:'); 
-
-    // Insert or update the user in your Supabase 'Users' table
-    const { error } = await supabase.from('Users').upsert([
-      {
-        id,                   // this is the user's UUID
-        name,                 // pulled from Google metadata
-        profile_pic_url: profilePic,
-      },
-    ]);
-
-    if (error) {
-      console.log('Error happening during upsertion...:', error)
-      console.error('[AuthContext] Failed to upsert user:', error.message);
-      return;
-    }
-
-    // Fetch the user's profile from Supabase to check their name
-    const { data, error: fetchError } = await supabase
-      .from('Users')
-      .select('name')
-      .eq('id', id)
-      .single(); // Get exactly one row
-
-    if (fetchError) {
-      console.error('[AuthContext] Failed to fetch user profile:', fetchError.message);
-      return;
-    }
-
-    // If the user's name is still "John Smith", redirect to /complete-profile
-    if (data?.name?.trim() === DEFAULT_NAME.trim() && typeof window !== 'undefined') {
-      console.log('[AuthContext] Redirecting to /complete-profile');
-      window.location.href = '/complete-profile';
-    } else {
-      console.log('[AuthContext] Not redirecting to /complete-profile:')
-      console.log('Name is ', data?.name?.trim())
-    }
-  };
-
   // When the component mounts: check auth state and listen for changes
   useEffect(() => {
     // Load session on initial render
