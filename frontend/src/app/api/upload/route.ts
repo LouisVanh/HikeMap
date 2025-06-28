@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { r2 } from '@/utils/r2Client';
 import { supabase } from '@/utils/supabaseClient';
-
+//import { hasCompletedProfile } from '@/utils/check_profile_completion';
+import useRequireCompleteProfile from '@/hooks/useRequireCompleteProfile';
 export const runtime = 'nodejs';
 
 const SIZE_LIMITS = {
@@ -37,6 +38,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Auth failed' }, { status: 401 });
   }
 
+  // Check if the user has completed their profile
+  if(['hike-small','hike-large','restaurant-small','restaurant-large'].includes(validType)) {
+    if(!useRequireCompleteProfile){
+      console.log("Oops, you haven't set up your profile yet... sending you back.")
+    }
+  }
   const formData = await req.formData();
   const file = formData.get('file') as File;
   if (!file) return NextResponse.json({ error: 'No file' }, { status: 400 });
