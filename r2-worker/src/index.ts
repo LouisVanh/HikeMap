@@ -28,6 +28,7 @@ export default {
 		// const secretKey = env.R2_SECRET_ACCESS_KEY;
 
 		const url = new URL(request.url);
+		console.log("Incoming request to:", request.url);
 		
 		// e.g. https://cdn.hikemap.app/uploads/mypic.jpg
 		const key = url.pathname.replace(/^\/+/, ''); // strip leading slashes
