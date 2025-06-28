@@ -48,6 +48,19 @@
   object-fit: cover;
 }
 
+.profile-picture-container img {
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  object-fit: cover;
+  transition: 0.2s;
+}
+
+.profile-picture-container:hover {
+  opacity: 0.8;
+}
+
+
 .upload-instruction {
   font-size: 0.85rem;
   color: #666;

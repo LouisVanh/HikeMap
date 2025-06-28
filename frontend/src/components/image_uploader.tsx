@@ -1,10 +1,28 @@
 'use client';
 
-import { useState } from 'react';
-import { supabase } from '@/utils/supabaseClient'; // make sure this exists
+import { supabase } from '@/utils/supabaseClient';
+import { useState, useRef, useEffect } from 'react';
+type ImageType = 'profile' | 'hike-large' | 'hike-small' | 'restaurant-large' | 'restaurant-small';
 
-export default function ImageUploader() {
-  const [url, setUrl] = useState('');
+interface Props {
+  type: ImageType;
+  onUpload?: (url: string) => void;
+  initialUrl?: string; // ← optional initial value (e.g. default Google pic)
+  className?: string;  // ← optional styling class
+}
+
+export default function ImageUploader({ type, onUpload, initialUrl = '', className }: Props) {
+  const [url, setUrl] = useState(initialUrl);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Allow parent to provide an initial image (e.g., Google profile)
+  useEffect(() => {
+    setUrl(initialUrl);
+  }, [initialUrl]);
+
+  const handleClick = () => {
+    fileInputRef.current?.click();
+  };
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -13,41 +31,43 @@ export default function ImageUploader() {
     const form = new FormData();
     form.append('file', file);
 
-    // ✅ Step 1: Get the user’s session token
-    const {
-      data: { session },
-      error,
-    } = await supabase.auth.getSession();
-
-    if (error || !session) {
-      alert('Not authenticated, please login again');
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error) {
+      console.log('Error while uploading image (getting session): ', error.message);
       return;
     }
 
-    const token = session.access_token;
+    const token = session?.access_token;
+    if (!token) {
+      alert('You must be logged in.');
+      return;
+    }
 
-    // ✅ Step 2: Upload to the API with token & type
-    const res = await fetch('/api/upload?type=profile', {
+    const res = await fetch(`/api/upload?type=${type}`, {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { Authorization: `Bearer ${token}` },
       body: form,
     });
 
     const data = await res.json();
-    if (!res.ok) {
-      console.error('Upload error:', data.error);
-      return;
+    if (data?.url) {
+      setUrl(data.url);
+      onUpload?.(data.url);
+    } else {
+      alert('Upload failed');
     }
-
-    setUrl(data.url); // ✅ Set the returned R2 public URL
   };
 
   return (
-    <div>
-      <input type="file" onChange={handleUpload} />
-      {url && <img src={url} alt="Uploaded preview" width={300} />}
+    <div className={className} onClick={handleClick} style={{ cursor: 'pointer' }}>
+      <img src={url} alt="Upload preview" />
+      <input
+        type="file"
+        accept="image/*"
+        ref={fileInputRef}
+        onChange={handleUpload}
+        style={{ display: 'none' }}
+      />
     </div>
   );
 }

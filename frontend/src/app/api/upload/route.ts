@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
-import sharp from 'sharp';
 import { r2 } from '@/utils/r2Client';
 import { supabase } from '@/utils/supabaseClient';
 
@@ -82,7 +81,7 @@ export async function POST(req: NextRequest) {
       })
     );
 
-    const publicUrl = `https://${process.env.R2_PUBLIC_DOMAIN}/${key}`;
+    const publicUrl = `https://cdn.hikemap.app/${key}`;
     return NextResponse.json({ url: publicUrl });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });

@@ -1,16 +1,16 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/utils/supabaseClient';
 import { useRouter } from 'next/navigation';
 import { DEFAULT_PROFILE_PICTURE_URL } from '@/utils/constants';
 import '@/styles/completeProfile.css'; // <-- import your CSS
+import ImageUploader from '@/components/image_uploader';
 
 export default function CompleteProfilePage() {
   const [name, setName] = useState('');
   const [profilePicUrl, setProfilePicUrl] = useState('');
   const [preview, setPreview] = useState('');
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const router = useRouter();
 
   // Load user data from Supabase
@@ -28,28 +28,6 @@ export default function CompleteProfilePage() {
 
     loadUser();
   }, []);
-
-  // Upload image to R2
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const form = new FormData();
-    form.append('file', file);
-
-    const res = await fetch('/api/upload', {
-      method: 'POST',
-      body: form,
-    });
-
-    const data = await res.json();
-    setProfilePicUrl(data.url);
-    setPreview(data.url);
-  };
-
-  const handleImageClick = () => {
-    fileInputRef.current?.click();
-  };
 
   // Submit updated profile to Supabase
   const handleSubmit = async () => {
@@ -82,20 +60,16 @@ export default function CompleteProfilePage() {
       <div className="profile-card">
         <h1 className="profile-title">Complete your profile</h1>
 
-        <div className="profile-picture-container" onClick={handleImageClick}>
-          <img
-            src={preview || DEFAULT_PROFILE_PICTURE_URL}
-            alt="Profile"
-          />
-        </div>
-
-        <input
-          type="file"
-          accept="image/*"
-          ref={fileInputRef}
-          onChange={handleImageChange}
-          style={{ display: 'none' }}
+        <ImageUploader
+          type="profile"
+          initialUrl={preview || DEFAULT_PROFILE_PICTURE_URL}
+          onUpload={(url) => {
+            setProfilePicUrl(url);
+            setPreview(url);
+          }}
+          className="profile-picture-container"
         />
+
         <p className="upload-instruction">Click the image to upload a new one</p>
 
         <div className="input-group">
