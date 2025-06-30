@@ -9,6 +9,8 @@ import {
 } from 'react';
 import { supabase } from '../utils/supabaseClient';
 import type { Session, User } from '@supabase/supabase-js';
+import * as Sentry from '@sentry/nextjs';
+
 
 // Define the shape of the context
 type AuthContextType = {
@@ -47,6 +49,7 @@ useEffect(() => {
         .eq('id', session.user.id)
         .maybeSingle();
 
+      // No data found
       if (error || !data) {
         console.log('[AuthProvider] Redirecting to /complete-profile...');
         window.location.href = '/complete-profile';
@@ -75,10 +78,22 @@ useEffect(() => {
     });
   };
 
-  // Call this to sign out the user
-  const signOut = async () => {
-    await supabase.auth.signOut({ scope: 'local' });
-  };
+const signOut = async () => {
+  try {
+    const { error } = await supabase.auth.signOut({ scope: 'local' });
+
+    if (error) {
+      console.error('Supabase signOut error:', error.message, error);
+      // Optional: send to Sentry
+      Sentry.captureException(error);
+    } else {
+      console.log('User signed out successfully');
+    }
+  } catch (err) {
+    console.error('Unexpected error during signOut:', err);
+    Sentry.captureException(err);
+  }
+};
 
   // Make the context values available to all children of this component
   return (
