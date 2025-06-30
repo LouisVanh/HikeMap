@@ -3,7 +3,7 @@ import './globals.css';
 import 'leaflet/dist/leaflet.css';
 import { Playfair_Display, Dancing_Script, Cormorant_Garamond, Marcellus } from 'next/font/google';
 import { Analytics } from "@vercel/analytics/next"
-
+import { SpeedInsights } from "@vercel/speed-insights/next"
 // Import all fonts as CSS variables
 const playfair = Playfair_Display({
   subsets: ['latin'],
@@ -54,6 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         
       {/* This is for our analytics tracking*/}
       <Analytics/> 
+      <SpeedInsights/>
       </body>
     </html>
     </AuthProvider>
