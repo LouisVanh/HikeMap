@@ -64,19 +64,27 @@ useEffect(() => {
 
 
 
-  // Call this when user clicks "Sign in"
-  const signInWithGoogle = async () => {
+// Call this when user clicks "Sign in"
+const signInWithGoogle = async () => {
+  try {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        // This ensures Supabase redirects the user to the correct domain after login
         redirectTo:
           typeof window !== 'undefined'
-            ? `${window.location.origin}/` // e.g. https://hikemap.app/
+            ? `${window.location.origin}/`
             : undefined,
       },
     });
-  };
+  } catch (error) {
+    console.error('Google Sign-In failed:', error);
+
+    // Optional: show user-facing feedback
+    Sentry.captureException(error);
+    alert('Something went wrong during Google sign-in. Check the console for details.');
+  }
+};
+
 
 const signOut = async () => {
   try {
