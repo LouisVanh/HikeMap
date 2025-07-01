@@ -29,79 +29,81 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null); // current session
 
   // When the component mounts: check auth state and listen for changes
-useEffect(() => {
-  // Initial session load
-  supabase.auth.getSession().then(({ data: { session } }) => {
-    setSession(session);
-    setUser(session?.user ?? null);
-  });
-
-  // Listen for login/logout events
-  const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-    setSession(session);
-    setUser(session?.user ?? null);
-
-    // Only run redirect check if user just signed in
-    if (event === 'SIGNED_IN' && session?.user) {
-      const { data, error } = await supabase
-        .from('Users')
-        .select('id')
-        .eq('id', session.user.id)
-        .maybeSingle();
-
-      // No data found
-      if (error || !data) {
-        console.log('[AuthProvider] Redirecting to /complete-profile...');
-        window.location.href = '/complete-profile';
-      }
-    }
-  });
-
-  return () => {
-    subscription.unsubscribe();
-  };
-}, []);
-
-
-
-// Call this when user clicks "Sign in"
-const signInWithGoogle = async () => {
-  try {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo:
-          typeof window !== 'undefined'
-            ? `${window.location.origin}/`
-            : undefined,
-      },
+  useEffect(() => {
+    // Initial session load
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
     });
-  } catch (error) {
-    console.error('Google Sign-In failed:', error);
 
-    // Optional: show user-facing feedback
-    Sentry.captureException(error);
-    alert('Something went wrong during Google sign-in. Check the console for details.');
-  }
-};
+    // Listen for login/logout events
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
 
+      // Only run redirect check if user just signed in
+      if (event === 'SIGNED_IN' && session?.user) {
+        const { data, error } = await supabase
+          .from('Users')
+          .select('id')
+          .eq('id', session.user.id)
+          .maybeSingle();
 
-const signOut = async () => {
-  try {
-    const { error } = await supabase.auth.signOut({ scope: 'local' });
+        // No data found
+        if (error || !data) {
+          console.log('[AuthProvider] Redirecting to /complete-profile...');
+          window.location.href = '/complete-profile';
+        }
+      }
+    });
 
-    if (error) {
-      console.error('Supabase signOut error:', error.message, error);
-      // Optional: send to Sentry
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  // Call this when user clicks "Sign in"
+  const signInWithGoogle = async () => {
+    try {
+      await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo:
+            typeof window !== 'undefined'
+              ? `${window.location.origin}/`
+              : undefined,
+          queryParams: {
+            prompt: 'select_account',
+          },
+        },
+      });
+
+    } catch (error) {
+      console.error('Google Sign-In failed:', error);
+
+      // Optional: show user-facing feedback
       Sentry.captureException(error);
-    } else {
-      console.log('User signed out successfully');
+      alert('Something went wrong during Google sign-in. Check the console for details.');
     }
-  } catch (err) {
-    console.error('Unexpected error during signOut:', err);
-    Sentry.captureException(err);
-  }
-};
+  };
+
+
+  const signOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut({ scope: 'local' });
+
+      if (error) {
+        console.error('Supabase signOut error:', error.message, error);
+        // Optional: send to Sentry
+        Sentry.captureException(error);
+      } else {
+        console.log('User signed out successfully');
+      }
+    } catch (err) {
+      console.error('Unexpected error during signOut:', err);
+      Sentry.captureException(err);
+    }
+  };
 
   // Make the context values available to all children of this component
   return (
