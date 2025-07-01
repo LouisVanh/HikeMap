@@ -31,28 +31,46 @@ export default function CompleteProfilePage() {
 
   // Submit updated profile to Supabase
   const handleSubmit = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    try {
+      const { data: userData, error: userError } = await supabase.auth.getUser();
 
-    const { id } = user;
-    const finalName = name.trim() || user.user_metadata.full_name;
-    const finalPic = profilePicUrl || DEFAULT_PROFILE_PICTURE_URL;
+      if (userError) {
+        console.error("Failed to fetch user:", userError);
+        alert("Unable to fetch user info.");
+        return;
+      }
 
-    const { error } = await supabase.from('Users').upsert([
-      {
-        id,
-        name: finalName,
-        profile_pic_url: finalPic,
-      },
-    ]);
+      const user = userData.user;
+      if (!user) {
+        console.warn("No user found in session.");
+        alert("You're not logged in.");
+        return;
+      }
 
-    if (error) {
-      console.error('[CompleteProfile] Failed to upsert user:', error);
-      alert('Failed to save profile.');
-      return;
+      const { id } = user;
+      const finalName = name.trim() || user.user_metadata.full_name;
+      const finalPic = profilePicUrl || DEFAULT_PROFILE_PICTURE_URL;
+
+      const { error } = await supabase.from('Users').upsert([
+        {
+          id,
+          name: finalName,
+          profile_pic_url: finalPic,
+        },
+      ]);
+
+      if (error) {
+        console.error('[CompleteProfile] Failed to upsert user:', error);
+        alert('Failed to save profile.');
+        return;
+      }
+
+      router.push('/map');
+      console.log("Profile updated successfully.");
+    } catch (err) {
+      console.error("Unexpected error during profile update:", err);
+      alert("An unexpected error occurred.");
     }
-
-    router.push('/map');
   };
 
   return (
