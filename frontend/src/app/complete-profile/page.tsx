@@ -4,29 +4,54 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/utils/supabaseClient';
 import { useRouter } from 'next/navigation';
 import { DEFAULT_PROFILE_PICTURE_URL } from '@/utils/constants';
-import '@/styles/completeProfile.css'; // <-- import your CSS
+import '@/styles/completeProfile.css';
 import ImageUploader from '@/components/image_uploader';
 
 export default function CompleteProfilePage() {
   const [name, setName] = useState('');
   const [profilePicUrl, setProfilePicUrl] = useState('');
   const [preview, setPreview] = useState('');
+  const [loadingUser, setLoadingUser] = useState(true); // 🔁 Track session readiness
   const router = useRouter();
 
   // Load user data from Supabase
   useEffect(() => {
     const loadUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const googleName = user.user_metadata.full_name ?? '';
-        const googleAvatar = user.user_metadata.avatar_url ?? DEFAULT_PROFILE_PICTURE_URL;
-        setName(googleName);
-        setProfilePicUrl(googleAvatar);
-        setPreview(googleAvatar);
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+
+        if (error) {
+          console.error('[CompleteProfile] Error fetching user:', error);
+        }
+
+        if (user) {
+          const googleName = user.user_metadata.full_name ?? '';
+          const googleAvatar = user.user_metadata.avatar_url ?? DEFAULT_PROFILE_PICTURE_URL;
+          setName(googleName);
+          setProfilePicUrl(googleAvatar);
+          setPreview(googleAvatar);
+        } else {
+          console.warn('[CompleteProfile] No user found');
+        }
+      } catch (err) {
+        console.error('[CompleteProfile] Unexpected error loading user:', err);
+      } finally {
+        setLoadingUser(false); // ✅ Whether we got a user or not, we’re done loading
       }
     };
 
     loadUser();
+  }, []);
+
+  // Debugging: track session changes
+  useEffect(() => {
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('[Auth] Event:', event, session);
+    });
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
   // Submit updated profile to Supabase
@@ -35,14 +60,14 @@ export default function CompleteProfilePage() {
       const { data: userData, error: userError } = await supabase.auth.getUser();
 
       if (userError) {
-        console.error("Failed to fetch user:", userError);
+        console.error('[CompleteProfile] Failed to fetch user:', userError);
         alert("Unable to fetch user info.");
         return;
       }
 
       const user = userData.user;
       if (!user) {
-        console.warn("No user found in session.");
+        console.warn('[CompleteProfile] No user found in session.');
         alert("You're not logged in.");
         return;
       }
@@ -65,13 +90,23 @@ export default function CompleteProfilePage() {
         return;
       }
 
+      console.log("[CompleteProfile] Profile updated successfully.");
       router.push('/map');
-      console.log("Profile updated successfully.");
     } catch (err) {
-      console.error("Unexpected error during profile update:", err);
+      console.error("[CompleteProfile] Unexpected error during profile update:", err);
       alert("An unexpected error occurred.");
     }
   };
+
+  if (loadingUser) {
+    return (
+      <main className="complete-profile-page">
+        <div className="profile-card">
+          <h1 className="profile-title">Loading profile...</h1>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="complete-profile-page">
@@ -101,7 +136,11 @@ export default function CompleteProfilePage() {
           />
         </div>
 
-        <button className="confirm-button" onClick={handleSubmit}>
+        <button
+          className="confirm-button"
+          onClick={handleSubmit}
+          disabled={loadingUser}
+        >
           Save and continue
         </button>
       </div>
