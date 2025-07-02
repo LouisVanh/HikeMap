@@ -65,6 +65,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Call this when user clicks "Sign in"
   const signInWithGoogle = async () => {
     try {
+      console.log("[AuthContext] Clicked sign in with Google")
       await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -90,11 +91,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     try {
+      console.log("[AuthContext] Clicked sign out")
+
       // Global sign out: all pages (if user has multiple tabs open)
       // There's no point in supporting local, as it can cause issues with server side cookies and invisible re-auth
       const { error } = await supabase.auth.signOut({ scope: 'global' });
 
       if (error) {
+        console.log("[AuthContext] Sign out error from supabase", error);
         console.error('Supabase signOut error:', error.message, error);
         // Optional: send to Sentry
         Sentry.captureException(error);

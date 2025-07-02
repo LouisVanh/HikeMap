@@ -22,21 +22,28 @@ export default function CompleteProfilePage() {
 
         if (error) {
           console.error('[CompleteProfile] Error fetching user:', error);
+          console.log("[CompleteProfile] Error fetching user:", error)
         }
 
         if (user) {
           const googleName = user.user_metadata.full_name ?? '';
           const googleAvatar = user.user_metadata.avatar_url ?? DEFAULT_PROFILE_PICTURE_URL;
+          console.log("[CompleteProfile] User fetched from google")
+          console.log("[CompleteProfile] Name:", googleName)
+          console.log("[CompleteProfile] Avatar:", googleAvatar)
+          console.log("[CompleteProfile] Metadata:", user.user_metadata)
+
           setName(googleName);
           setProfilePicUrl(googleAvatar);
           setPreview(googleAvatar);
         } else {
-          console.warn('[CompleteProfile] No user found');
+          console.warn('[CompleteProfile] No error, but also no user found');
         }
       } catch (err) {
         console.error('[CompleteProfile] Unexpected error loading user:', err);
       } finally {
-        setLoadingUser(false); // ✅ Whether we got a user or not, we’re done loading
+        setLoadingUser(false); // Whether we got a user or not, we’re done loading
+        console.log("[CompleteProfile] Done loading user")
       }
     };
 
@@ -57,6 +64,7 @@ export default function CompleteProfilePage() {
   // Submit updated profile to Supabase
   const handleSubmit = async () => {
     try {
+      console.log("[CompleteProfile] I clicked submit!")
       const { data: userData, error: userError } = await supabase.auth.getUser();
 
       if (userError) {
@@ -64,7 +72,7 @@ export default function CompleteProfilePage() {
         alert("Unable to fetch user info.");
         return;
       }
-
+      console.log("[CompleteProfile] No user error, continuing.")
       const user = userData.user;
       if (!user) {
         console.warn('[CompleteProfile] No user found in session.');
