@@ -90,7 +90,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut({ scope: 'local' });
+      // Global sign out: all pages (if user has multiple tabs open)
+      // There's no point in supporting local, as it can cause issues with server side cookies and invisible re-auth
+      const { error } = await supabase.auth.signOut({ scope: 'global' });
 
       if (error) {
         console.error('Supabase signOut error:', error.message, error);
@@ -99,6 +101,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } else {
         console.log('User signed out successfully');
       }
+      window.location.href = '/'; // <-- force reload of homepage context
     } catch (err) {
       console.error('Unexpected error during signOut:', err);
       Sentry.captureException(err);
