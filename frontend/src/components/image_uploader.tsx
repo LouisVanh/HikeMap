@@ -86,6 +86,7 @@ export default function ImageUploader({ type, onUpload, initialUrl = '', classNa
         alt="Upload preview"
         width={imageWidth}
         height={imageHeight}
+        unoptimized // ensure that next.js won't try to aggressively cache this and break the url
       />
       <input
         type="file"
