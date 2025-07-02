@@ -3,6 +3,7 @@ import Link from 'next/link';
 import ParticlesWrapper from '../components/particles_wrapper';
 import { AuthButton } from '../components/auth_button';
 import Image from 'next/image';
+import { LEAF_PIC_URL } from '@/utils/constants';
 
 export default function HomePage() {
   return (
@@ -37,13 +38,15 @@ export default function HomePage() {
       >
         <h1>Welcome to HikeMap</h1>
         <Link href="/map">
-          <button>
+          <button className="button-lg">
             <Image
-              src="https://cdn-icons-png.flaticon.com/128/892/892917.png"
+              src= {LEAF_PIC_URL}
               alt="Leaf"
-              style={{ width: '16px', height: '16px', marginRight: '0.5rem' }}
+              width = {128} // Original pic size
+              height= {128} // vvvvv scaling of it vvvv
+              style={{ width: '1.25rem', height: '1.25rem', marginRight: '.75rem', alignSelf: 'center'}}
             />
-            Go to Map
+            <strong>Go to Map</strong>
           </button>
         </Link>
 

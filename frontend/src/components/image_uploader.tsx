@@ -10,9 +10,11 @@ interface Props {
   onUpload?: (url: string) => void;
   initialUrl?: string; // ← optional initial value (e.g. default Google pic)
   className?: string;  // ← optional styling class
+  imageWidth: number;
+  imageHeight: number;
 }
 
-export default function ImageUploader({ type, onUpload, initialUrl = '', className }: Props) {
+export default function ImageUploader({ type, onUpload, initialUrl = '', className, imageWidth, imageHeight }: Props) {
   const [url, setUrl] = useState(initialUrl);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -61,7 +63,7 @@ export default function ImageUploader({ type, onUpload, initialUrl = '', classNa
 
   return (
     <div className={className} onClick={handleClick} style={{ cursor: 'pointer' }}>
-      <Image src={url} alt="Upload preview" />
+      <Image src={url} alt="Upload preview" width={imageWidth} height={imageHeight}/>
       <input
         type="file"
         accept="image/*"

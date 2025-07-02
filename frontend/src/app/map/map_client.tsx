@@ -11,6 +11,7 @@ import { useUserLocation } from '@/hooks/useUserLocation';
 import { useMap } from 'react-leaflet';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import { HOME_PIC_URL } from '@/utils/constants';
 
 
 const position: LatLngExpression = [43.7154, -79.3896];
@@ -103,8 +104,8 @@ export default function MapClient() {
                 >
                     <button
                         style={{
-                            width: '48px',
-                            height: '48px',
+                            width: '4rem',
+                            height: '4rem',
                             backgroundColor: '#2563eb',
                             border: 'none',
                             borderRadius: '50%', // ← makes it perfectly round
@@ -115,16 +116,18 @@ export default function MapClient() {
                             boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
                         }}
                         onClick={() => {
-                            console.log("Clicked button")
+                            console.log("Clicked button home icon")
                             {/* For some reason, this won't work - apparently JSX cant be created like this, need a normal func */ }
                             {/*userPosition && <FlyToUserWhenReady position={userPosition} /> */ }
                             setFlyToUserRequested(true)
                         }}
                     >
                         <Image
-                            src="/home.svg"  // 👈 Put your house icon in the public folder (where assets reside)
+                            src={HOME_PIC_URL}
                             alt="Home"
-                            style={{ width: '24px', height: '24px' }}
+                            width={240}
+                            height={240}
+                            style={{ width: '3rem', height: '3rem' }}
                         />
                     </button>
                 </div>

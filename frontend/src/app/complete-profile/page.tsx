@@ -121,6 +121,8 @@ export default function CompleteProfilePage() {
             setPreview(url);
           }}
           className="profile-picture-container"
+          imageWidth={80}
+          imageHeight={80}
         />
 
         <p className="upload-instruction">Click the image to upload a new one</p>
