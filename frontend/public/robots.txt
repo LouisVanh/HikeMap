@@ -1,9 +1,5 @@
-# *
 User-agent: *
 Allow: /
 
-# Host
-Host: https://hikemap.app
 
-# Sitemaps
-Sitemap: https://hikemap.app/sitemap.xml
+Sitemap: https://hikemap.app/sitemap-0.xml
