@@ -23,6 +23,7 @@ export default function CompleteProfilePage() {
         if (error) {
           console.error('[CompleteProfile] Error fetching user:', error);
           console.log("[CompleteProfile] Error fetching user:", error)
+          router.push('/') // go back to main page, we aren't authenticated
         }
 
         if (user) {
@@ -38,9 +39,11 @@ export default function CompleteProfilePage() {
           setPreview(googleAvatar);
         } else {
           console.warn('[CompleteProfile] No error, but also no user found');
+          router.push('/') // go back to main page, we aren't authenticated
         }
       } catch (err) {
         console.error('[CompleteProfile] Unexpected error loading user:', err);
+          router.push('/') // go back to main page, we aren't authenticated
       } finally {
         setLoadingUser(false); // Whether we got a user or not, we’re done loading
         console.log("[CompleteProfile] Done loading user")
@@ -65,7 +68,12 @@ export default function CompleteProfilePage() {
   const handleSubmit = async () => {
     try {
       console.log("[CompleteProfile] I clicked submit!")
+      // Quick session check to make sure we're not doing anything stupid.
+      const sessionCheck = await supabase.auth.getSession();
+      console.log("[DEBUG] Current session:", sessionCheck);
+
       const { data: userData, error: userError } = await supabase.auth.getUser();
+      console.log("[CompleteProfile] I clicked submit - Done waiting for getUser()!")
 
       if (userError) {
         console.error('[CompleteProfile] Failed to fetch user:', userError);
@@ -102,6 +110,7 @@ export default function CompleteProfilePage() {
       router.push('/map');
     } catch (err) {
       console.error("[CompleteProfile] Unexpected error during profile update:", err);
+      console.log("[CompleteProfile] Unexpected error during profile update:", err);
       alert("An unexpected error occurred.");
     }
   };
@@ -110,7 +119,7 @@ export default function CompleteProfilePage() {
     return (
       <main className="complete-profile-page">
         <div className="profile-card">
-          <h1 className="profile-title">Loading profile...</h1>
+          <h1 className="profile-title">Loading Google profile...</h1>
         </div>
       </main>
     );
