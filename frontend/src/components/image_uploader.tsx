@@ -16,12 +16,22 @@ interface Props {
 
 export default function ImageUploader({ type, onUpload, initialUrl = '', className, imageWidth, imageHeight }: Props) {
   const [url, setUrl] = useState(initialUrl);
+  const [localPreview, setLocalPreview] = useState<string | null>(null); // ← local preview during upload
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Allow parent to provide an initial image (e.g., Google profile)
   useEffect(() => {
     setUrl(initialUrl);
   }, [initialUrl]);
+
+  // 🧹 Clean up local preview blob URL when component unmounts or new file is picked
+  useEffect(() => {
+    return () => {
+      if (localPreview) {
+        URL.revokeObjectURL(localPreview);
+      }
+    };
+  }, [localPreview]);
 
   const handleClick = () => {
     fileInputRef.current?.click();
@@ -30,6 +40,10 @@ export default function ImageUploader({ type, onUpload, initialUrl = '', classNa
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // 🖼️ Show local preview immediately
+    const tempUrl = URL.createObjectURL(file);
+    setLocalPreview(tempUrl);
 
     const form = new FormData();
     form.append('file', file);
@@ -56,6 +70,10 @@ export default function ImageUploader({ type, onUpload, initialUrl = '', classNa
     if (data?.url) {
       setUrl(data.url);
       onUpload?.(data.url);
+
+      // ✅ Replace local preview with final Cloudflare R2 URL and clean up
+      URL.revokeObjectURL(tempUrl);
+      setLocalPreview(null);
     } else {
       alert('Upload failed');
     }
@@ -63,7 +81,12 @@ export default function ImageUploader({ type, onUpload, initialUrl = '', classNa
 
   return (
     <div className={className} onClick={handleClick} style={{ cursor: 'pointer' }}>
-      <Image src={url} alt="Upload preview" width={imageWidth} height={imageHeight}/>
+      <Image
+        src={localPreview || url || '/default.jpg'} // ← show local preview instantly if available
+        alt="Upload preview"
+        width={imageWidth}
+        height={imageHeight}
+      />
       <input
         type="file"
         accept="image/*"
