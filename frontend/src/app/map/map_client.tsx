@@ -10,6 +10,7 @@ import { useUserLocation } from '@/hooks/useUserLocation';
 // For zooming
 import { useMap } from 'react-leaflet';
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 
 
 const position: LatLngExpression = [43.7154, -79.3896];
@@ -120,7 +121,7 @@ export default function MapClient() {
                             setFlyToUserRequested(true)
                         }}
                     >
-                        <img
+                        <Image
                             src="/home.svg"  // 👈 Put your house icon in the public folder (where assets reside)
                             alt="Home"
                             style={{ width: '24px', height: '24px' }}

@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import ParticlesWrapper from '../components/particles_wrapper';
 import { AuthButton } from '../components/auth_button';
+import Image from 'next/image';
 
 export default function HomePage() {
   return (
@@ -37,7 +38,7 @@ export default function HomePage() {
         <h1>Welcome to HikeMap</h1>
         <Link href="/map">
           <button>
-            <img
+            <Image
               src="https://cdn-icons-png.flaticon.com/128/892/892917.png"
               alt="Leaf"
               style={{ width: '16px', height: '16px', marginRight: '0.5rem' }}

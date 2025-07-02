@@ -2,6 +2,7 @@
 
 import { supabase } from '@/utils/supabaseClient';
 import { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 type ImageType = 'profile' | 'hike-large' | 'hike-small' | 'restaurant-large' | 'restaurant-small';
 
 interface Props {
@@ -60,7 +61,7 @@ export default function ImageUploader({ type, onUpload, initialUrl = '', classNa
 
   return (
     <div className={className} onClick={handleClick} style={{ cursor: 'pointer' }}>
-      <img src={url} alt="Upload preview" />
+      <Image src={url} alt="Upload preview" />
       <input
         type="file"
         accept="image/*"
