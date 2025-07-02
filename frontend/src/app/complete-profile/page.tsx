@@ -23,6 +23,7 @@ export default function CompleteProfilePage() {
         if (error) {
           console.error('[CompleteProfile] Error fetching user:', error);
           console.log("[CompleteProfile] Error fetching user:", error)
+          setLoadingUser(false); // Disable for next attempt
           router.push('/') // go back to main page, we aren't authenticated
         }
 
@@ -39,11 +40,13 @@ export default function CompleteProfilePage() {
           setPreview(googleAvatar);
         } else {
           console.warn('[CompleteProfile] No error, but also no user found');
+          setLoadingUser(false); // Disable for next attempt
           router.push('/') // go back to main page, we aren't authenticated
         }
       } catch (err) {
         console.error('[CompleteProfile] Unexpected error loading user:', err);
-          router.push('/') // go back to main page, we aren't authenticated
+        setLoadingUser(false); // Disable for next attempt
+        router.push('/') // go back to main page, we aren't authenticated
       } finally {
         setLoadingUser(false); // Whether we got a user or not, we’re done loading
         console.log("[CompleteProfile] Done loading user")
