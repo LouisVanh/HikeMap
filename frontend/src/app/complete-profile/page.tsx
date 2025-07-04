@@ -62,7 +62,7 @@ export default function CompleteProfilePage() {
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, []);
+  }, [router]);
 
 
   // Submit updated profile to Supabase
