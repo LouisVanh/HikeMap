@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/utils/supabaseClient';
+import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import { DEFAULT_PROFILE_PICTURE_URL } from '@/utils/constants';
 import '@/styles/completeProfile.css';
@@ -16,65 +16,60 @@ export default function CompleteProfilePage() {
 
   // Load user data from Supabase
   useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const { data: { user }, error } = await supabase.auth.getUser();
+    const supabase = createClient();
+    console.log("[CompleteProfile] Supabase client created.")
 
-        if (error) {
-          console.error('[CompleteProfile] Error fetching user:', error);
-          console.log("[CompleteProfile] Error fetching user:", error)
-          setLoadingUser(false); // Disable for next attempt
-          router.push('/') // go back to main page, we aren't authenticated
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log("[CompleteProfile] OnAuthStateChange fired.", event, session)
+
+        if (session) {
+          console.log("[CompleteProfile] Session found: ", session)
+          if (event === 'SIGNED_IN') {
+            console.log("[CompleteProfile] Sign in detected.")
+            try {
+              const { data: { user }, error } = await supabase.auth.getUser();
+
+              if (error || !user) {
+                console.warn('[CompleteProfile] Error getting user after auth change', error);
+                router.push('/');
+                return;
+              }
+
+              const googleName = user.user_metadata.full_name ?? '';
+              const googleAvatar = user.user_metadata.avatar_url ?? DEFAULT_PROFILE_PICTURE_URL;
+
+              console.log("[CompleteProfile] User fetched from google");
+              setName(googleName);
+              setProfilePicUrl(googleAvatar);
+              setPreview(googleAvatar);
+            } catch (err) {
+              console.error('[CompleteProfile] Unexpected error loading user:', err);
+              router.push('/');
+            } finally {
+              setLoadingUser(false);
+            }
+          } else {
+            console.log('[CompleteProfile] No session found after auth event');
+            setLoadingUser(false);
+            router.push('/');
+          }
         }
-
-        if (user) {
-          const googleName = user.user_metadata.full_name ?? '';
-          const googleAvatar = user.user_metadata.avatar_url ?? DEFAULT_PROFILE_PICTURE_URL;
-          console.log("[CompleteProfile] User fetched from google")
-          console.log("[CompleteProfile] Name:", googleName)
-          console.log("[CompleteProfile] Avatar:", googleAvatar)
-          console.log("[CompleteProfile] Metadata:", user.user_metadata)
-
-          setName(googleName);
-          setProfilePicUrl(googleAvatar);
-          setPreview(googleAvatar);
-        } else {
-          console.warn('[CompleteProfile] No error, but also no user found');
-          setLoadingUser(false); // Disable for next attempt
-          router.push('/') // go back to main page, we aren't authenticated
-        }
-      } catch (err) {
-        console.error('[CompleteProfile] Unexpected error loading user:', err);
-        setLoadingUser(false); // Disable for next attempt
-        router.push('/') // go back to main page, we aren't authenticated
-      } finally {
-        setLoadingUser(false); // Whether we got a user or not, we’re done loading
-        console.log("[CompleteProfile] Done loading user")
       }
-    };
+    );
 
-    loadUser();
-  }, []);
-
-  // Debugging: track session changes
-  useEffect(() => {
-    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('[Auth] Event:', event, session);
-    });
-
+    // Cleanup
     return () => {
-      listener.subscription.unsubscribe();
+      authListener.subscription.unsubscribe();
     };
   }, []);
+
 
   // Submit updated profile to Supabase
   const handleSubmit = async () => {
     try {
       console.log("[CompleteProfile] I clicked submit!")
-      // Quick session check to make sure we're not doing anything stupid.
-      const sessionCheck = await supabase.auth.getSession();
-      console.log("[DEBUG] Current session:", sessionCheck);
-
+      const supabase = createClient();
       const { data: userData, error: userError } = await supabase.auth.getUser();
       console.log("[CompleteProfile] I clicked submit - Done waiting for getUser()!")
 

@@ -1,9 +1,23 @@
-import { supabase } from './supabaseClient';
+import { createClient } from '@/utils/supabase/server';
 
-export async function hasCompletedProfile(userId: string): Promise<boolean> {
+export async function hasCompletedProfile(): Promise<boolean> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    console.warn('[hasCompletedProfile] No authenticated user:', userError);
+    return false;
+  }
+
+  const userId = user.id;
+
   const { data, error } = await supabase
     .from('Users')
-    .select('id') // or 'name' if you want extra validation
+    .select('id')
     .eq('id', userId)
     .maybeSingle();
 

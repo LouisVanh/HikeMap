@@ -1,4 +1,3 @@
-import { AuthProvider } from '@/context/auth_context';
 import './globals.css';
 import 'leaflet/dist/leaflet.css';
 import { Playfair_Display, Dancing_Script, Cormorant_Garamond, Marcellus } from 'next/font/google';
@@ -39,9 +38,6 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    // This is custom made, providing authentication context to all pages.
-    <AuthProvider>
-
     <html lang="en"
     // Fonts
     className={`
@@ -57,6 +53,5 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <SpeedInsights/>
       </body>
     </html>
-    </AuthProvider>
   );
 }

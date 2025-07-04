@@ -1,6 +1,6 @@
 'use client';
 
-import { supabase } from '@/utils/supabaseClient';
+import { createClient } from '@/utils/supabase/client';
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 type ImageType = 'profile' | 'hike-large' | 'hike-small' | 'restaurant-large' | 'restaurant-small';
@@ -48,6 +48,7 @@ export default function ImageUploader({ type, onUpload, initialUrl = '', classNa
     const form = new FormData();
     form.append('file', file);
 
+    const supabase = createClient();
     const { data: { session }, error } = await supabase.auth.getSession();
     if (error) {
       console.log('Error while uploading image (getting session): ', error.message);

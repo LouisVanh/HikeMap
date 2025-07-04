@@ -1,13 +1,15 @@
 'use client'
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/utils/supabaseClient';
+import { createClient } from '@/utils/supabase/client';
+
 
 export default function useRequireCompleteProfile() {
   const router = useRouter();
 
   useEffect(() => {
     const checkProfile = async () => {
+      const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return; // not logged in
 
