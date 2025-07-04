@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { r2 } from '@/utils/r2Client';
-import { supabase } from '@/utils/supabaseClient';
+import { createClient } from '@/utils/supabase/client';
 import { hasCompletedProfile } from '@/utils/check_profile_completion';
 import sharp from 'sharp';
 //import useRequireCompleteProfile from '@/hooks/useRequireCompleteProfile'; Will never work in server
@@ -29,6 +29,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Missing or invalid auth' }, { status: 401 });
   }
 
+  const supabase = createClient();
+  
   const token = authHeader.replace('Bearer ', '');
   const {
     data: { user },
@@ -41,7 +43,7 @@ export async function POST(req: NextRequest) {
 
   // Check if the user has completed their profile
   if (['hike-small', 'hike-large', 'restaurant-small', 'restaurant-large'].includes(validType)) {
-    const profileOk = await hasCompletedProfile(user.id);
+    const profileOk = await hasCompletedProfile();
     if (!profileOk) {
       return NextResponse.json({ error: 'Please complete your profile first' }, { status: 403 });
     }
