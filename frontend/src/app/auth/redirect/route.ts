@@ -11,17 +11,18 @@ import { hasCompletedProfile } from "@/utils/check_profile_completion";
 export async function GET() {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    const completed = await hasCompletedProfile();
-
-    console.log("[AuthRedirect] The user found: ",user)
-    // if(!user){
-    //     console.error(user)
-    //     redirect("/error")
+    
+    console.log("[AuthRedirect] User found:", user);
+    
+    // Temporarily force all users to complete profile for debugging
+    console.log("[AuthRedirect] Forcing complete-profile for debugging");
+    redirect("/complete-profile");
+    
+    // Comment out the original logic for now
+    // const completed = await hasCompletedProfile();
+    // if (completed) {
+    //     redirect("/");
+    // } else {
+    //     redirect("/complete-profile");
     // }
-
-    if (completed) {
-        redirect("/");
-    } else {
-        redirect("/complete-profile");
-    }
 }

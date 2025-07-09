@@ -25,7 +25,8 @@ export default function CompleteProfilePage() {
 
         if (session) {
           console.log("[CompleteProfile] Session found: ", session)
-          if (event === 'SIGNED_IN') {
+          // Check for both SIGNED_IN and TOKEN_REFRESHED events, or just load user data if session exists
+          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
             console.log("[CompleteProfile] Sign in detected.")
             try {
               const { data: { user }, error } = await supabase.auth.getUser();
@@ -49,14 +50,44 @@ export default function CompleteProfilePage() {
             } finally {
               setLoadingUser(false);
             }
-          } else {
-            console.log('[CompleteProfile] No session found after auth event');
-            setLoadingUser(false);
-            router.push('/');
           }
+        } else if (event === 'INITIAL_SESSION') {
+          // Don't redirect immediately on INITIAL_SESSION if session is null
+          // This might be a temporary state while session is being established
+          console.log('[CompleteProfile] INITIAL_SESSION with null session - waiting for session to establish');
+          // Don't set loadingUser to false yet, wait for actual session
+        } else {
+          console.log('[CompleteProfile] No session found after auth event:', event);
+          setLoadingUser(false);
+          router.push('/');
         }
       }
     );
+
+    // Also check for existing session immediately
+    const checkExistingSession = async () => {
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        
+        if (user && !error) {
+          console.log("[CompleteProfile] Existing user session found:", user);
+          const googleName = user.user_metadata.full_name ?? '';
+          const googleAvatar = user.user_metadata.avatar_url ?? DEFAULT_PROFILE_PICTURE_URL;
+
+          setName(googleName);
+          setProfilePicUrl(googleAvatar);
+          setPreview(googleAvatar);
+        } else {
+          console.log("[CompleteProfile] No existing session found, waiting for auth state change");
+        }
+      } catch (err) {
+        console.error('[CompleteProfile] Error checking existing session:', err);
+      } finally {
+        setLoadingUser(false);
+      }
+    };
+
+    checkExistingSession();
 
     // Cleanup
     return () => {
