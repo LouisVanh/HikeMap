@@ -3,6 +3,7 @@
 import { createClient } from '@/utils/supabase/client';
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
+import { DEFAULT_PROFILE_PICTURE_URL } from '@/utils/constants';
 type ImageType = 'profile' | 'hike-large' | 'hike-small' | 'restaurant-large' | 'restaurant-small';
 
 interface Props {
@@ -83,7 +84,7 @@ export default function ImageUploader({ type, onUpload, initialUrl = '', classNa
   return (
     <div className={className} onClick={handleClick} style={{ cursor: 'pointer' }}>
       <Image
-        src={localPreview || url || '/default.jpg'} // ← show local preview instantly if available
+        src={localPreview || url || DEFAULT_PROFILE_PICTURE_URL} // ← show local preview instantly if available
         alt="Upload preview"
         width={imageWidth}
         height={imageHeight}
