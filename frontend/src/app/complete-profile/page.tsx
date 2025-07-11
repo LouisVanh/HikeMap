@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { DEFAULT_PROFILE_PICTURE_URL } from '@/utils/constants';
 import '@/styles/completeProfile.css';
 import ImageUploader from '@/components/image_uploader';
+import { User } from '@supabase/supabase-js';
 
 export default function CompleteProfilePage() {
   const [name, setName] = useState('');
@@ -19,82 +20,62 @@ export default function CompleteProfilePage() {
     const supabase = createClient();
     console.log("[CompleteProfile] Supabase client created.")
 
+    const loadUserData = async (user: User) => {
+      const googleName = user.user_metadata.full_name ?? '';
+      const googleAvatar = user.user_metadata.avatar_url ?? DEFAULT_PROFILE_PICTURE_URL;
+
+      console.log("[CompleteProfile] User data loaded:", { googleName, googleAvatar });
+      setName(googleName);
+      setProfilePicUrl(googleAvatar);
+      setPreview(googleAvatar);
+      setLoadingUser(false);
+    };
+
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log("[CompleteProfile] OnAuthStateChange fired.", event, session)
+        console.log("[CompleteProfile] Auth state change:", event, session);
 
-        if (session) {
-          console.log("[CompleteProfile] Session found: ", session)
-          // Check for both SIGNED_IN and TOKEN_REFRESHED events, or just load user data if session exists
-          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
-            console.log("[CompleteProfile] Sign in detected.")
-            try {
-              const { data: { user }, error } = await supabase.auth.getUser();
-
-              if (error || !user) {
-                console.warn('[CompleteProfile] Error getting user after auth change', error);
-                router.push('/');
-                return;
-              }
-
-              const googleName = user.user_metadata.full_name ?? '';
-              const googleAvatar = user.user_metadata.avatar_url ?? DEFAULT_PROFILE_PICTURE_URL;
-
-              console.log("[CompleteProfile] User fetched from google");
-              setName(googleName);
-              setProfilePicUrl(googleAvatar);
-              setPreview(googleAvatar);
-            } catch (err) {
-              console.error('[CompleteProfile] Unexpected error loading user:', err);
-              router.push('/');
-            } finally {
-              setLoadingUser(false);
-            }
-          }
-        } else if (event === 'INITIAL_SESSION') {
-          // Don't redirect immediately on INITIAL_SESSION if session is null
-          // This might be a temporary state while session is being established
-          console.log('[CompleteProfile] INITIAL_SESSION with null session - waiting for session to establish');
-          // Don't set loadingUser to false yet, wait for actual session
-        } else {
-          console.log('[CompleteProfile] No session found after auth event:', event);
-          setLoadingUser(false);
+        if (session?.user) {
+          await loadUserData(session.user);
+        } else if (event === 'SIGNED_OUT') {
           router.push('/');
         }
       }
     );
 
-    // Also check for existing session immediately
-    const checkExistingSession = async () => {
+    // Check for existing session immediately
+    const checkSession = async () => {
       try {
-        const { data: { user }, error } = await supabase.auth.getUser();
-        
-        if (user && !error) {
-          console.log("[CompleteProfile] Existing user session found:", user);
-          const googleName = user.user_metadata.full_name ?? '';
-          const googleAvatar = user.user_metadata.avatar_url ?? DEFAULT_PROFILE_PICTURE_URL;
+        const { data: { session }, error } = await supabase.auth.getSession();
 
-          setName(googleName);
-          setProfilePicUrl(googleAvatar);
-          setPreview(googleAvatar);
+        if (error) {
+          console.error('[CompleteProfile] Error getting session:', error);
+          setLoadingUser(false);
+          router.push('/');
+          return;
+        }
+
+        if (session?.user) {
+          console.log("[CompleteProfile] Existing session found");
+          await loadUserData(session.user);
         } else {
-          console.log("[CompleteProfile] No existing session found, waiting for auth state change");
+          console.log("[CompleteProfile] No existing session");
+          setLoadingUser(false);
+          router.push('/');
         }
       } catch (err) {
-        console.error('[CompleteProfile] Error checking existing session:', err);
-      } finally {
+        console.error('[CompleteProfile] Error checking session:', err);
         setLoadingUser(false);
+        router.push('/');
       }
     };
 
-    checkExistingSession();
+    checkSession();
 
-    // Cleanup
     return () => {
       authListener.subscription.unsubscribe();
     };
   }, [router]);
-
 
   // Submit updated profile to Supabase
   const handleSubmit = async () => {

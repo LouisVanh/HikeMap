@@ -4,24 +4,24 @@ import { createClient } from '@/utils/supabase/client';
 
 export async function signInWithGoogle() {
   const supabase = createClient();
-  const { data, error } = await supabase.auth.signInWithOAuth({
+  const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
       redirectTo: `${window.location.origin}/auth/redirect`, // triggers GET() automatically
       queryParams: {
-        access_type: 'offline',
+        // access_type: 'offline', // not sure if necessary
         prompt: 'consent',
       },
     },
   });
 
   if (error) {
-    console.error('OAuth Error:', error);
+    console.error('OAuth Error signing in with google:', error);
     return;
   }
 
   // This opens Google login – Supabase handles redirect
-  window.location.href = data.url;
+  // window.location.href = data.url;
 }
 
 export async function signOut() {

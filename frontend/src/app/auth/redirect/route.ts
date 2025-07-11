@@ -7,22 +7,33 @@
 import { redirect } from "next/navigation";
 import { createClient } from '@/utils/supabase/server';
 import { hasCompletedProfile } from "@/utils/check_profile_completion";
+import { NextRequest } from "next/server";
 
-export async function GET() {
+export async function GET(request : NextRequest) {
+    console.log("[AuthRedirect] route entered - preparing redirect")
+    console.log("[AuthRedirect] All cookies:", request.cookies.getAll());
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    
+    const { error: session_error, data: { session } } = await supabase.auth.getSession();
+
+    if (session_error) {
+        console.error("[AuthRedirect] Error fetching session: ", session_error.message)
+    } else {
+        console.log("[AuthRedirect] Session found:", session)
+    }
+    const { error: user_error, data: { user } } = await supabase.auth.getUser();
+
+    if (user_error) {
+        console.error("[AuthRedirect] Error fetching user: ", user_error.message)
+    }
+
     console.log("[AuthRedirect] User found:", user);
-    
-    // Temporarily force all users to complete profile for debugging
-    console.log("[AuthRedirect] Forcing complete-profile for debugging");
-    redirect("/complete-profile");
-    
-    // Comment out the original logic for now
-    // const completed = await hasCompletedProfile();
-    // if (completed) {
-    //     redirect("/");
-    // } else {
-    //     redirect("/complete-profile");
-    // }
+
+    const completed = await hasCompletedProfile();
+    if (completed) {
+        console.log("[AuthRedirect] User has completed profile, redirecting home");
+        redirect("/");
+    } else {
+        console.log("[AuthRedirect] User has NOT completed profile, redirecting to complete-profile");
+        redirect("/complete-profile");
+    }
 }
