@@ -24,7 +24,7 @@ export default function CompleteProfilePage() {
   const router = useRouter();
 
   // Debug logging helper
-  const debugLog = (message: string, data?: any) => {
+  const debugLog = (message: string, data?: unknown) => {
     console.log(`[CompleteProfile] ${message}`, data || '');
   };
 
@@ -83,18 +83,24 @@ export default function CompleteProfilePage() {
             .eq('id', user.id)
             .single();
           
-          const timeoutPromise = new Promise((_, reject) => {
+          const timeoutPromise = new Promise<never>((_, reject) => {
             setTimeout(() => reject(new Error('Database query timeout')), 8000);
           });
           
           debugLog("🚀 Starting database query with 8s timeout...");
-          const result = await Promise.race([queryPromise, timeoutPromise]) as any;
+          const result = await Promise.race([queryPromise, timeoutPromise]);
           
           debugLog("✅ Database query completed");
-          debugLog("Database query result", { data: result.data, error: result.error });
           
-          existingProfile = result.data;
-          dbError = result.error;
+          // Type-safe result handling
+          if (result && typeof result === 'object' && 'data' in result && 'error' in result) {
+            debugLog("Database query result", { data: result.data, error: result.error });
+            existingProfile = result.data;
+            dbError = result.error;
+          } else {
+            debugLog("Unexpected query result structure", result);
+            dbError = null;
+          }
         } catch (queryError) {
           debugLog("❌ Database query failed or timed out", queryError);
           

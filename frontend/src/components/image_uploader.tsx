@@ -30,7 +30,7 @@ export default function ImageUploader({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Debug logging helper
-  const debugLog = (message: string, data?: any) => {
+  const debugLog = (message: string, data?: unknown) => {
     console.log(`[ImageUploader-${type}] ${message}`, data || '');
   };
 
