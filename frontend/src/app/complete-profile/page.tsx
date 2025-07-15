@@ -8,7 +8,7 @@ import '@/styles/completeProfile.css';
 import ImageUploader from '@/components/image_uploader';
 import { User } from '@supabase/supabase-js';
 import { PostgrestError } from '@supabase/supabase-js';
-import { debuglog } from 'util';
+
 
 // Define the user profile type
 interface UserProfile {
