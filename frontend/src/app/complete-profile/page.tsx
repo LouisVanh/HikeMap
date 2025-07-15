@@ -345,6 +345,12 @@ export default function CompleteProfilePage() {
     );
   }
 
+  console.log('About to render ImageUploader with:', { 
+  profilePicUrl, 
+  preview, 
+  passedInitialUrl: preview || DEFAULT_PROFILE_PICTURE_URL 
+});
+
   return (
     <main className="complete-profile-page">
       <div className="profile-card">

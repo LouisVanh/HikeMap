@@ -24,6 +24,12 @@ export default function ImageUploader({
   imageWidth, 
   imageHeight 
 }: Props) {
+  console.log('ImageUploader received props:', { 
+  initialUrl, 
+  type,
+  hasOnUpload: !!onUpload 
+});
+
   const [url, setUrl] = useState(initialUrl || DEFAULT_PROFILE_PICTURE_URL);
   const [localPreview, setLocalPreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
