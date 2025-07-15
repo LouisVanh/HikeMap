@@ -9,7 +9,6 @@ import ImageUploader from '@/components/image_uploader';
 import { User } from '@supabase/supabase-js';
 import { PostgrestError } from '@supabase/supabase-js';
 
-
 // Define the user profile type
 interface UserProfile {
   name: string;
@@ -75,7 +74,7 @@ export default function CompleteProfilePage() {
         // Step 1: Try to get existing profile from database with timeout
         debugLog("🔍 About to query database for existing profile...");
         debugLog("Query details:", { table: 'Users', userId: user.id });
-
+        
         let existingProfile: UserProfile | null = null;
         let dbError: PostgrestError | null = null;
         
@@ -154,7 +153,6 @@ export default function CompleteProfilePage() {
           debugLog("✓ Using profile picture from database", finalPicUrl);
         } else if (googleAvatar) {
           finalPicUrl = googleAvatar;
-          setPreview(finalPicUrl)
           debugLog("✓ Using profile picture from Google", finalPicUrl);
         } else {
           finalPicUrl = DEFAULT_PROFILE_PICTURE_URL;
@@ -298,7 +296,7 @@ export default function CompleteProfilePage() {
       const finalName = name.trim() || user.user_metadata?.full_name || 'User';
       // CRITICAL FIX: Use the ref value to ensure we get the most up-to-date URL
       const finalPic = latestProfilePicUrl.current || profilePicUrl || DEFAULT_PROFILE_PICTURE_URL;
-      debugLog("The 'finalPic' variable from the ref is ", finalPic)
+
       debugLog("Preparing to upsert profile to Supabase", { 
         id, 
         finalName, 
