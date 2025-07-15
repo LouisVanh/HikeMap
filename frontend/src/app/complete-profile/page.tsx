@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import { DEFAULT_PROFILE_PICTURE_URL } from '@/utils/constants';
@@ -22,6 +22,9 @@ export default function CompleteProfilePage() {
   const [loadingUser, setLoadingUser] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
+  
+  // Use a ref to track the latest profile picture URL
+  const latestProfilePicUrl = useRef('');
 
   // Debug logging helper
   const debugLog = (message: string, data?: unknown) => {
@@ -156,7 +159,7 @@ export default function CompleteProfilePage() {
           debugLog("✓ Using default profile picture", finalPicUrl);
         }
 
-        // Step 3: Update state
+        // Step 3: Update state and ref
         debugLog("Updating state with final values...", { 
           finalName, 
           finalPicUrl 
@@ -165,6 +168,8 @@ export default function CompleteProfilePage() {
         setName(finalName);
         setProfilePicUrl(finalPicUrl);
         setPreview(finalPicUrl);
+        // IMPORTANT: Update the ref to keep track of the current URL
+        latestProfilePicUrl.current = finalPicUrl;
 
         debugLog("✓ State updated successfully");
 
@@ -177,6 +182,7 @@ export default function CompleteProfilePage() {
         setName(googleName);
         setProfilePicUrl(googleAvatar);
         setPreview(googleAvatar);
+        latestProfilePicUrl.current = googleAvatar;
         
         debugLog("Applied error fallback", { googleName, googleAvatar });
       } finally {
@@ -248,14 +254,16 @@ export default function CompleteProfilePage() {
     };
   }, [router]);
 
-  // Handle image upload from ImageUploader
+  // Handle image upload from ImageUploader - FIXED VERSION
   const handleImageUpload = (url: string) => {
     debugLog("Image uploaded, updating URLs", { url });
     setProfilePicUrl(url);
     setPreview(url);
+    // CRITICAL FIX: Update the ref immediately to ensure we use the latest URL
+    latestProfilePicUrl.current = url;
   };
 
-  // Submit updated profile to Supabase
+  // Submit updated profile to Supabase - FIXED VERSION
   const handleSubmit = async () => {
     if (isSubmitting) {
       debugLog("Submit already in progress, ignoring duplicate click");
@@ -286,14 +294,16 @@ export default function CompleteProfilePage() {
 
       const { id } = user;
       const finalName = name.trim() || user.user_metadata?.full_name || 'User';
-      const finalPic = profilePicUrl || DEFAULT_PROFILE_PICTURE_URL;
+      // CRITICAL FIX: Use the ref value to ensure we get the most up-to-date URL
+      const finalPic = latestProfilePicUrl.current || profilePicUrl || DEFAULT_PROFILE_PICTURE_URL;
 
       debugLog("Preparing to upsert profile", { 
         id, 
         finalName, 
         finalPic,
         originalName: name,
-        originalPicUrl: profilePicUrl
+        originalPicUrl: profilePicUrl,
+        refPicUrl: latestProfilePicUrl.current
       });
 
       const { error } = await supabase.from('Users').upsert([
