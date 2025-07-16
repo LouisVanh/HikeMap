@@ -41,13 +41,15 @@ export default function ImageUploader({
   };
 
   // Allow parent to provide an initial image
-  useEffect(() => {
-    debugLog('useEffect - initialUrl changed', { initialUrl, currentUrl: url });
-    if (initialUrl) {
-      setUrl(initialUrl);
-      debugLog('URL updated from initialUrl', initialUrl);
-    }
-  }, [initialUrl]);
+useEffect(() => {
+  console.log('🔄 ImageUploader useEffect called with:', { initialUrl, currentUrl: url });
+  if (initialUrl) {
+    console.log('✅ Setting URL to:', initialUrl);
+    setUrl(initialUrl);
+  } else {
+    console.log('❌ initialUrl is falsy, not updating');
+  }
+}, [initialUrl]);
 
   // Clean up local preview blob URL when component unmounts or new file is picked
   useEffect(() => {
