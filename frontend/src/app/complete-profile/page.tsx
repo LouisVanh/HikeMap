@@ -24,7 +24,7 @@ export default function CompleteProfilePage() {
   const [isImageUploading, setIsImageUploading] = useState(false);
 
   const router = useRouter();
-  
+
   // Use a ref to track the latest profile picture URL
   const latestProfilePicUrl = useRef('');
 
@@ -39,17 +39,17 @@ export default function CompleteProfilePage() {
   // Load user data from Supabase (DB first, then Google fallback)
   useEffect(() => {
     debugLog("=== USEEFFECT STARTING ===");
-    
+
     const supabase = createClient();
     debugLog("Supabase client created");
-    
+
     // Test database connection immediately
     const testConnection = async () => {
       try {
         debugLog("🔍 Testing database connection...");
         const { data, error } = await supabase.from('Users').select('count').limit(1);
         debugLog("Database connection test result", { data, error });
-        
+
         if (error) {
           debugLog("❌ Database connection test failed", error);
         } else {
@@ -59,7 +59,7 @@ export default function CompleteProfilePage() {
         debugLog("❌ Database connection test threw exception", err);
       }
     };
-    
+
     testConnection();
 
     const loadUserData = async (user: User) => {
@@ -76,10 +76,10 @@ export default function CompleteProfilePage() {
         // Step 1: Try to get existing profile from database with timeout
         debugLog("🔍 About to query database for existing profile...");
         debugLog("Query details:", { table: 'Users', userId: user.id });
-        
+
         let existingProfile: UserProfile | null = null;
         let dbError: PostgrestError | null = null;
-        
+
         try {
           // Add a race condition with timeout to prevent hanging
           const queryPromise = supabase
@@ -87,16 +87,16 @@ export default function CompleteProfilePage() {
             .select('name, profile_pic_url')
             .eq('id', user.id)
             .single();
-          
+
           const timeoutPromise = new Promise<never>((_, reject) => {
             setTimeout(() => reject(new Error('Database query timeout')), 8000);
           });
-          
+
           debugLog("🚀 Starting database query with 8s timeout...");
           const result = await Promise.race([queryPromise, timeoutPromise]);
-          
+
           debugLog("✅ Database query completed");
-          
+
           // Type-safe result handling
           if (result && typeof result === 'object' && 'data' in result && 'error' in result) {
             debugLog("Database query result", { data: result.data, error: result.error });
@@ -108,7 +108,7 @@ export default function CompleteProfilePage() {
           }
         } catch (queryError) {
           debugLog("❌ Database query failed or timed out", queryError);
-          
+
           // Check if it's a timeout vs actual error
           if (queryError instanceof Error && queryError.message === 'Database query timeout') {
             debugLog("🔥 Database query timed out - possible connection issue");
@@ -120,7 +120,7 @@ export default function CompleteProfilePage() {
 
         // Check if the error is "not found" (PGRST116)
         const isNotFoundError = dbError?.code === 'PGRST116';
-        
+
         if (dbError && !isNotFoundError) {
           debugLog("⚠️ Database query error (not 'not found')", dbError);
         } else if (isNotFoundError) {
@@ -162,9 +162,9 @@ export default function CompleteProfilePage() {
         }
 
         // Step 3: Update state and ref
-        debugLog("Updating state with final values...", { 
-          finalName, 
-          finalPicUrl 
+        debugLog("Updating state with final values...", {
+          finalName,
+          finalPicUrl
         });
 
         setName(finalName);
@@ -180,12 +180,12 @@ export default function CompleteProfilePage() {
         // Fallback to Google data only
         const googleName = user.user_metadata?.full_name || user.user_metadata?.name || 'User';
         const googleAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture || DEFAULT_PROFILE_PICTURE_URL;
-        
+
         setName(googleName);
         setProfilePicUrl(googleAvatar);
         setPreview(googleAvatar);
         latestProfilePicUrl.current = googleAvatar;
-        
+
         debugLog("Applied error fallback", { googleName, googleAvatar });
       } finally {
         clearTimeout(timeoutId);
@@ -216,11 +216,11 @@ export default function CompleteProfilePage() {
         debugLog("🔍 Checking for existing session...");
         const { data: { session }, error } = await supabase.auth.getSession();
 
-        debugLog("Session check result", { 
-          hasSession: !!session, 
-          hasUser: !!session?.user, 
+        debugLog("Session check result", {
+          hasSession: !!session,
+          hasUser: !!session?.user,
           userId: session?.user?.id,
-          error: error 
+          error: error
         });
 
         if (error) {
@@ -275,10 +275,10 @@ export default function CompleteProfilePage() {
     try {
       debugLog("Submit clicked, starting profile save");
       setIsSubmitting(true);
-      
+
       const supabase = createClient();
       const { data: userData, error: userError } = await supabase.auth.getUser();
-      
+
       debugLog("User data fetched for submit", { hasUser: !!userData?.user, error: userError });
 
       if (userError) {
@@ -299,9 +299,9 @@ export default function CompleteProfilePage() {
       // CRITICAL FIX: Use the ref value to ensure we get the most up-to-date URL
       const finalPic = latestProfilePicUrl.current || profilePicUrl || DEFAULT_PROFILE_PICTURE_URL;
 
-      debugLog("Preparing to upsert profile to Supabase", { 
-        id, 
-        finalName, 
+      debugLog("Preparing to upsert profile to Supabase", {
+        id,
+        finalName,
         finalPic,
         originalName: name,
         originalPicUrl: profilePicUrl,
@@ -322,9 +322,18 @@ export default function CompleteProfilePage() {
         return;
       }
 
+      // Update user metadata with display name so we can show it easily without another query
+      const { error: metaError } = await supabase.auth.updateUser({
+        data: { display_name: finalName }
+      });
+
+      if (metaError) {
+        debugLog("⚠️ Failed to update user metadata", metaError);
+      }
+
       debugLog("Profile updated successfully, redirecting to map");
       router.push('/map');
-      
+
     } catch (err) {
       debugLog("Unexpected error during profile update", err);
       alert("An unexpected error occurred.");
@@ -347,11 +356,11 @@ export default function CompleteProfilePage() {
     );
   }
 
-  console.log('About to render ImageUploader with:', { 
-  profilePicUrl, 
-  preview, 
-  passedInitialUrl: preview || DEFAULT_PROFILE_PICTURE_URL 
-});
+  console.log('About to render ImageUploader with:', {
+    profilePicUrl,
+    preview,
+    passedInitialUrl: preview || DEFAULT_PROFILE_PICTURE_URL
+  });
 
   return (
     <main className="complete-profile-page">
