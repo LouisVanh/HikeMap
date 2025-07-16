@@ -4,8 +4,21 @@ import ParticlesWrapper from '../components/particles_wrapper';
 import { AuthButton } from '../components/auth_button';
 import Image from 'next/image';
 import { LEAF_PIC_URL } from '@/utils/constants';
+import { useEffect, useState } from 'react';
+import { createClient } from '@/utils/supabase/client';
 
 export default function HomePage() {
+  const [isSignedIn, setIsSignedIn] = useState(false);
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsSignedIn(!!session?.user);
+    };
+    checkSession();
+  }, []);
+
   return (
     <>
       <ParticlesWrapper />
@@ -40,17 +53,33 @@ export default function HomePage() {
         <Link href="/map">
           <button className="button-lg">
             <Image
-              src= {LEAF_PIC_URL}
+              src={LEAF_PIC_URL}
               alt="Leaf"
-              width = {128} // Original pic size
-              height= {128} // vvvvv scaling of it vvvv
-              style={{ width: '1.25rem', height: '1.25rem', marginRight: '.75rem', alignSelf: 'center'}}
+              width={128}
+              height={128}
+              style={{ width: '1.25rem', height: '1.25rem', marginRight: '.75rem', alignSelf: 'center' }}
             />
             <strong>Go to Map</strong>
           </button>
         </Link>
 
-
+        {/* 🔘 Top-left Complete Profile Button (if signed in) */}
+        {isSignedIn && (
+          <div
+            style={{
+              position: 'absolute',
+              top: '1rem',
+              left: '1rem',
+              zIndex: 10,
+            }}
+          >
+            <Link href="/complete-profile">
+              <button className="button-sm">
+                <strong>Profile</strong>
+              </button>
+            </Link>
+          </div>
+        )}
       </main>
     </>
   );
