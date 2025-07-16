@@ -1,6 +1,6 @@
 import './globals.css';
 import 'leaflet/dist/leaflet.css';
-import { Playfair_Display, Dancing_Script, Cormorant_Garamond, Marcellus } from 'next/font/google';
+import { Playfair_Display, Dancing_Script, Cormorant_Garamond } from 'next/font/google';
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 // Import all fonts as CSS variables
@@ -22,11 +22,11 @@ const cormorant = Cormorant_Garamond({
   variable: '--font-cormorant',
 });
 
-const marcellus = Marcellus({
-  subsets: ['latin'],
-  weight: ['400'],
-  variable: '--font-marcellus',
-});
+// const marcellus = Marcellus({
+//   subsets: ['latin'],
+//   weight: ['400'],
+//   variable: '--font-marcellus',
+// });
 
 export const metadata = {
   title: 'HikeMap',
@@ -44,7 +44,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       ${playfair.variable}
       ${dancing.variable}
       ${cormorant.variable}
-      ${marcellus.variable}
       `}>
       <body style={{ margin: 0 }}>{children}
         

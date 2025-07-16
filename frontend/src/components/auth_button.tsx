@@ -22,7 +22,7 @@ export const AuthButton = () => {
     return (
       <div className="flex items-center gap-4">
         <>
-          <span className="text-white">Hi, {user.user_metadata?.display_name || user.email}</span>
+          <span className="small-text">Hi, {user.user_metadata?.display_name || user.email}</span>
           <button
             className="bg-red-500 text-white px-3 py-1 rounded"
             onClick={() => {
