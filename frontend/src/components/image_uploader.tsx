@@ -14,6 +14,7 @@ interface Props {
   className?: string;
   imageWidth: number;
   imageHeight: number;
+  onWaitingForUserUploading?: (uploading: boolean) => void; // avoid race condition with submit & r2 worker
 }
 
 export default function ImageUploader({ 
@@ -22,8 +23,11 @@ export default function ImageUploader({
   initialUrl = '', 
   className, 
   imageWidth, 
-  imageHeight 
+  imageHeight,
+  onWaitingForUserUploading
 }: Props) {
+
+
   console.log('ImageUploader received props:', { 
   initialUrl, 
   type,
@@ -80,6 +84,7 @@ useEffect(() => {
     });
 
     setIsUploading(true);
+    onWaitingForUserUploading?.(true); // ✅ signal upload started
 
     try {
       // Show local preview immediately
@@ -148,6 +153,7 @@ useEffect(() => {
       }
     } finally {
       setIsUploading(false);
+      onWaitingForUserUploading?.(false); // ✅ signal upload ended
       debugLog('Upload process completed');
     }
   };

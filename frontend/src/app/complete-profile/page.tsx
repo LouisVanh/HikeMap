@@ -21,6 +21,8 @@ export default function CompleteProfilePage() {
   const [preview, setPreview] = useState('');
   const [loadingUser, setLoadingUser] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isImageUploading, setIsImageUploading] = useState(false);
+
   const router = useRouter();
   
   // Use a ref to track the latest profile picture URL
@@ -363,6 +365,7 @@ export default function CompleteProfilePage() {
           className="profile-picture-container"
           imageWidth={80}
           imageHeight={80}
+          onWaitingForUserUploading={setIsImageUploading}
         />
 
         <p className="upload-instruction">Click the image to upload a new one</p>
@@ -381,7 +384,7 @@ export default function CompleteProfilePage() {
         <button
           className="confirm-button"
           onClick={handleSubmit}
-          disabled={isSubmitting}
+          disabled={isSubmitting || isImageUploading}
         >
           {isSubmitting ? 'Saving...' : 'Save and continue'}
         </button>
