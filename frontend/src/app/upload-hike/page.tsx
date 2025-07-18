@@ -145,7 +145,7 @@ export default function UploadHikePage() {
   }, [photos]);
 
   return (
-    <div className="p-6 max-w-xl mx-auto">
+    <div className="p-6 max-w-xl mx-auto h-screen overflow-y-auto">
       <h1 className="text-2xl font-bold mb-4">Finalize Your Hike</h1>
       <p className="text-gray-600 mb-4">
         This hike will be <strong>public</strong> and visible to others on the map.
