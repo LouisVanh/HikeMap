@@ -2,7 +2,6 @@
 
 import { Marker } from 'react-leaflet';
 import L from 'leaflet';
-import { useEffect, useState } from 'react';
 
 export type PictureWithData = {
   pic_id: string;
