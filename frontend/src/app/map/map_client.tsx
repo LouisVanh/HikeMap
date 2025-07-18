@@ -13,6 +13,8 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { HOME_PIC_URL } from '@/utils/constants';
 import RecordHikeButton from '@/components/record_hike_button';
+import PictureThumbnailMarkers, { PictureWithData } from '@/components/picture_thumbnail_marker';
+import { createClient } from '@/utils/supabase/client';
 
 
 
@@ -58,6 +60,26 @@ function FlyToUserWhenReady({ position }: { position: LatLngExpression }) {
 export default function MapClient() {
     const userPosition = useUserLocation();
     const [flyToUserRequested, setFlyToUserRequested] = useState(false);
+    const [pictures, setPictures] = useState<PictureWithData[]>([]);
+
+    useEffect(() => {
+        const fetchPictures = async () => {
+            const supabase = createClient();
+            const { data, error } = await supabase
+                .from("Pictures")
+                .select("pic_id, pic_url_preview, location")
+                .not("location", "is", null)
+                .not("pic_url_preview", "is", null);
+
+            if (error) {
+                console.error("Error fetching pictures", error);
+            } else if (data) {
+                setPictures(data);
+            }
+        };
+
+        fetchPictures();
+    }, []);
 
     return (
         <div style={{ height: '100vh', width: '100%', position: 'relative' }}>
@@ -77,6 +99,10 @@ export default function MapClient() {
                 <Marker position={positionTestRestaurant} icon={customRedMarkerIcon}>
                     <Popup>🌍 Restaurant over here!</Popup>
                 </Marker>
+
+                {/* Thumbnail markers fetched from supabase */}
+                {pictures.length > 0 && <PictureThumbnailMarkers pictures={pictures} />}
+
 
                 {/* if user pos exists */}
                 {userPosition && (
