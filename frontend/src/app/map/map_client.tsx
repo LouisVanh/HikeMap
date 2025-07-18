@@ -12,6 +12,9 @@ import { useMap } from 'react-leaflet';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { HOME_PIC_URL } from '@/utils/constants';
+import RecordHikeButton from '@/components/record_hike_button';
+
+
 
 
 const position: LatLngExpression = [43.7154, -79.3896];
@@ -132,6 +135,7 @@ export default function MapClient() {
                     </button>
                 </div>
             </MapContainer>
+            <RecordHikeButton />
 
 
 

@@ -62,10 +62,17 @@ export async function POST(req: NextRequest) {
   let contentType = file.type;
 
   try {
-    if (['profile', 'hike-small', 'restaurant-small'].includes(validType)) {
+    if (['profile'].includes(validType)) {
       resizedBuffer = await sharp(buffer)
         .resize({ width: 512 })
         .jpeg({ quality: 80 })
+        .toBuffer();
+      contentType = 'image/jpeg';
+    }
+    else if (['hike-small', 'restaurant-small'].includes(validType)) {
+      resizedBuffer = await sharp(buffer)
+        .resize({ width: 64 })
+        .jpeg({ quality: 20 })
         .toBuffer();
       contentType = 'image/jpeg';
     }
