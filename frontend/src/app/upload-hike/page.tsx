@@ -22,6 +22,16 @@ export default function UploadHikePage() {
   const [hikeName, setHikeName] = useState('');
   const router = useRouter();
 
+   useEffect(() => {
+    // Enable scroll on mount
+    document.body.style.overflow = 'auto';
+
+    // Clean up on unmount
+    return () => {
+      document.body.style.overflow = 'hidden';
+    };
+  }, []);
+  
   useEffect(() => {
     const loadData = async () => {
       const locs = await getAllLocations();
